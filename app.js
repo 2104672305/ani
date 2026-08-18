@@ -81,29 +81,12 @@ const App = {
         bangumiBtn.href = `https://bgm.tv/user/${this.data.username}`;
     },
 
-    async loadAvatar() {
-        // 先用本地头像
+    loadAvatar() {
+        // 始终使用本地头像，不请求远程 API
         const avatarEl = document.getElementById('avatar');
         const avatarLink = document.getElementById('avatar-link');
-        avatarEl.src = 'avatar.jpg';
+        avatarEl.src = 'avatar.jpg?v=2';
         avatarLink.style.display = 'block';
-
-        // 再尝试从 API 获取真实头像
-        const username = this.data?.username;
-        if (!username) return;
-        try {
-            const resp = await fetch(`https://api.bgm.tv/v0/users/${username}`, {
-                headers: { 'Accept': 'application/json' }
-            });
-            if (resp.ok) {
-                const user = await resp.json();
-                if (user.avatar) {
-                    avatarEl.src = user.avatar;
-                }
-            }
-        } catch (e) {
-            // 保持本地头像
-        }
     },
 
     setupNav() {
