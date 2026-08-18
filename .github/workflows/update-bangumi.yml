@@ -1,0 +1,39 @@
+name: Update Bangumi Data
+
+on:
+  schedule:
+    # 上海时间每天凌晨 3:00 = UTC 19:00 (前一天)
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch Bangumi data
+        run: python fetch_bangumi.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bangumi.json covers
+          if git diff --cached --quiet; then
+            echo "没有数据变化，跳过提交"
+          else
+            git commit -m "chore: update bangumi data"
+            git push
+          fi
