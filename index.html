@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空淅的追番列表</title>
+    <link rel="icon" id="favicon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-overlay" id="bg-overlay" style="background-image: url('bg.jpg');"></div>
+
+    <header class="glass-header">
+        <div class="container header-content">
+            <div class="header-left">
+                <h1 class="site-title"><span id="nickname">加载中...</span>的追番列表</h1>
+                <p class="update-time">最后更新: <span id="update-time">-</span></p>
+            </div>
+            <div class="header-right">
+                <a class="avatar-link" id="avatar-link" href="#" target="_blank" style="display:none;">
+                    <img class="avatar" id="avatar" src="" alt="avatar">
+                </a>
+                <button class="wordcloud-btn" id="wordcloud-btn">查看词云</button>
+                <a class="bangumi-btn" id="bangumi-btn" href="https://bgm.tv/" target="_blank">前往 Bangumi</a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="glass-nav">
+        <div class="container nav-content">
+            <div class="nav-tabs" id="nav-tabs">
+                <button class="nav-tab active" data-status="all"><span class="tab-name">全部</span><span class="tab-count">(<span id="count-all">-</span>)</span></button>
+                <button class="nav-tab" data-status="doing"><span class="tab-name">在看</span><span class="tab-count">(<span id="count-doing">-</span>)</span></button>
+                <button class="nav-tab" data-status="collect"><span class="tab-name">看过</span><span class="tab-count">(<span id="count-done">-</span>)</span></button>
+                <button class="nav-tab" data-status="wish"><span class="tab-name">想看</span><span class="tab-count">(<span id="count-wish">-</span>)</span></button>
+                <button class="nav-tab" data-status="on_hold"><span class="tab-name">搁置</span><span class="tab-count">(<span id="count-onhold">-</span>)</span></button>
+                <button class="nav-tab search-tab" id="search-toggle">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </div>
+            <input type="text" class="search-input" id="search" placeholder="搜索番剧...">
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="anime-grid" id="anime-grid">
+            <div class="loading" id="loading">正在从 Bangumi API 加载数据...</div>
+        </div>
+    </main>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal glass-modal">
+            <button class="modal-close" id="modal-close">×</button>
+            <div class="modal-body">
+                <div class="modal-row modal-row-cover">
+                    <div class="modal-cover-wrap" id="modal-cover-wrap">
+                        <img class="modal-cover" id="modal-cover" src="" alt="">
+                    </div>
+                    <div class="modal-cover-info">
+                        <h2 class="modal-name-cn" id="modal-name-cn"></h2>
+                        <p class="modal-name" id="modal-name"></p>
+                        <a class="bangumi-btn modal-bangumi-btn" id="modal-bangumi-btn" href="#" target="_blank">前往 Bangumi</a>
+                    </div>
+                </div>
+                <div class="modal-row modal-row-info">
+                    <div class="modal-info-cell">
+                        <span class="modal-label">追番状态</span>
+                        <span class="modal-value" id="modal-status"></span>
+                    </div>
+                    <div class="modal-info-cell">
+                        <span class="modal-label">评分</span>
+                        <span class="modal-value" id="modal-score"></span>
+                    </div>
+                    <div class="modal-info-cell">
+                        <span class="modal-label">集数</span>
+                        <span class="modal-value" id="modal-eps"></span>
+                    </div>
+                    <div class="modal-info-cell">
+                        <span class="modal-label">开播日期</span>
+                        <span class="modal-value" id="modal-date"></span>
+                    </div>
+                </div>
+                <div class="modal-row modal-row-tags">
+                    <span class="modal-label">标签</span>
+                    <div class="modal-tags" id="modal-tags"></div>
+                </div>
+                <div class="modal-row modal-row-summary">
+                    <span class="modal-label">简介</span>
+                    <p class="modal-summary" id="modal-summary"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 词云弹窗 -->
+    <div class="modal-overlay" id="wc-overlay">
+        <div class="modal glass-modal wc-modal">
+            <button class="modal-close" id="wc-close">×</button>
+            <div class="modal-body wc-body">
+                <h2 class="wc-title">番剧标签词云</h2>
+                <div class="wc-container" id="wc-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返回顶部 -->
+    <button class="back-to-top" id="back-to-top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"></path>
+        </svg>
+    </button>
+
+    <footer>
+        <div class="container">
+            <p>作者：空淅 | 数据来源: <a href="https://bgm.tv/" target="_blank">Bangumi</a> | 通过 <a href="https://bangumi.github.io/api/" target="_blank">Bangumi API</a> 实时获取</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
