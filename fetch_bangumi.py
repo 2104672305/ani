@@ -5,7 +5,7 @@
 用法:
     python fetch_bangumi.py                 # 使用 config.json 中的用户名
     python fetch_bangumi.py <username>      # 指定用户名
-    python fetch_bangumi.py <username> --yse-covers   # 不下载封面
+    python fetch_bangumi.py <username> --no-covers   # 不下载封面
 
 生成的 bangumi.json 供 index.html 加载。前端是纯静态的，无需后端。
 """
@@ -108,19 +108,21 @@ def normalize_image_url(url):
     return m.group(1) if m else ""
 
 
-def download_covers(collections):
-    """下载封面到本地 covers/ 目录，并改写 images 路径"""
-    if not os.path.isdir(COVERS_DIR):
-        os.makedirs(COVERS_DIR, exist_ok=True)
+def download_covers(collections, covers_dir, size, force=False):
+    """下载封面到本地 covers/ 目录，并改写 images 路径。
+    force=True 时强制重新下载覆盖，否则跳过已存在的封面。
+    """
+    if not os.path.isdir(covers_dir):
+        os.makedirs(covers_dir, exist_ok=True)
 
-    os.makedirs(COVERS_DIR, exist_ok=True)
     downloaded = 0
     failed = 0
+    skipped = 0
 
     for i, col in enumerate(collections):
         subject = col.get("subject", {})
         images = subject.get("images", {})
-        img_url = images.get("common") or images.get("large") or ""
+        img_url = images.get(size) or images.get("common") or images.get("large") or ""
         if not img_url:
             continue
 
@@ -128,11 +130,12 @@ def download_covers(collections):
         if not filename:
             continue
 
-        local_path = os.path.join(COVERS_DIR, filename)
+        local_path = os.path.join(covers_dir, filename)
 
-        if os.path.exists(local_path) and os.path.getsize(local_path) > 1000:
-            images["common"] = f"covers/{filename}"
-            images["large"] = f"covers/{filename}"
+        if not force and os.path.exists(local_path) and os.path.getsize(local_path) > 1000:
+            images["common"] = f"{covers_dir}/{filename}"
+            images["large"] = f"{covers_dir}/{filename}"
+            skipped += 1
             continue
 
         try:
@@ -141,8 +144,8 @@ def download_covers(collections):
                 data = resp.read()
             with open(local_path, "wb") as f:
                 f.write(data)
-            images["common"] = f"covers/{filename}"
-            images["large"] = f"covers/{filename}"
+            images["common"] = f"{covers_dir}/{filename}"
+            images["large"] = f"{covers_dir}/{filename}"
             downloaded += 1
             if downloaded % 20 == 0:
                 print(f"    已下载 {downloaded} 张封面...")
@@ -153,7 +156,7 @@ def download_covers(collections):
 
         time.sleep(0.05)
 
-    print(f"  - 封面下载完成: 新增 {downloaded} 张, 失败 {failed} 张")
+    print(f"  - 封面下载完成: 新增 {downloaded} 张, 跳过 {skipped} 张, 失败 {failed} 张")
 
 
 def main():
@@ -165,9 +168,17 @@ def main():
     except FileNotFoundError:
         pass
 
+    bangumi_cfg = config.get("bangumi", {})
+    covers_cfg = config.get("covers", {})
+
+    # 封面配置（命令行可覆盖）
+    covers_dir = covers_cfg.get("dir", "covers")
+    cover_size = covers_cfg.get("size", "common")
+    download = covers_cfg.get("download", True)
+    force = covers_cfg.get("force", False)
+
     # 参数解析
-    username = config.get("bangumi", {}).get("username", "")
-    download = True
+    username = bangumi_cfg.get("username", "")
     args = sys.argv[1:]
     if args:
         for a in args:
@@ -194,8 +205,9 @@ def main():
 
     # 下载封面
     if download:
-        print("  - 下载封面到本地...")
-        download_covers(collections)
+        mode = "强制更新" if force else "增量更新"
+        print(f"  - 下载封面到本地 ({covers_dir}/, 尺寸: {cover_size}, 模式: {mode})...")
+        download_covers(collections, covers_dir, cover_size, force)
 
     # 构建输出
     result = {
