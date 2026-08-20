@@ -6,5 +6,11 @@
         "background_mobile": "",
         "favicon": "favicon.png",
         "website": ""
+    },
+    "covers": {
+        "download": true,
+        "dir": "covers",
+        "size": "common",
+        "force": true
     }
 }

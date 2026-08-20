@@ -5,7 +5,7 @@
 用法:
     python fetch_bangumi.py                 # 使用 config.json 中的用户名
     python fetch_bangumi.py <username>      # 指定用户名
-    python fetch_bangumi.py <username> --no-covers   # 不下载封面
+    python fetch_bangumi.py <username> --yse-covers   # 不下载封面
 
 生成的 bangumi.json 供 index.html 加载。前端是纯静态的，无需后端。
 """
